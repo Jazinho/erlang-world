@@ -1,5 +1,5 @@
 -module(lab0).
--export([area/1,len/1, amin/1, amax/1, tuple_min_max/1, list_min_max/1, pola/1, prog/1, lista_jedynek/1, lista_znakow/2]).
+-export([area/1,len/1, amin/1, amax/1, tuple_min_max/1, list_min_max/1, pola/1, prog/1, lista_jedynek/1, lista_znakow/2, convTemp/2]).
 -compile({no_auto_import,[len/1]}).
 
 % Ex.1 - calculating polygons' areas
@@ -50,6 +50,21 @@ pola([Head|Tail]) -> [area(Head)]++pola(Tail).
 prog(0) -> [];
 prog(N) -> [N]++prog(N-1).
 
+% Ex.9 - temperature converter (temperature given in tuples {type, value}, ex. {c, 20.5}; function gets temperature and scale to convert).
+convTemp(Tuple, ScaleTo) -> 
+	C= toCelc(Tuple, ScaleTo),
+	case ScaleTo of
+		c -> C;
+		f -> (9/5) * C + 32;
+		k -> C + 273.15
+	end.
+
+toCelc({ScaleFrom, Value}, _) ->
+	case ScaleFrom of
+		f -> (5/9) * (Value-32);
+		k -> Value - 273.15;
+		c -> Value
+	end.
 
 
 % Ex.10 - returning array of ones of specified length/array of specified signs of specified length
