@@ -1,5 +1,5 @@
 -module(lab0).
--export([area/1,len/1, amin/1, amax/1, tmin_max/1, lmin_max/1, pola/1, prog/1, lista_jedynek/1, lista_znakow/2]).
+-export([area/1,len/1, amin/1, amax/1, tuple_min_max/1, list_min_max/1, pola/1, prog/1, lista_jedynek/1, lista_znakow/2]).
 -compile({no_auto_import,[len/1]}).
 
 % Ex.1 - calculating polygons' areas
@@ -11,7 +11,6 @@ area({cuboid, A, B, C}) -> 2*area({rect,A,B})+2*area({rect,B,C})+2*area({rect,A,
 
 % Ex.2 - calculating list's length
 len([]) -> 0;
-len([_]) -> 1;
 len([_|Tail]) -> 1+ len(Tail).
 
 %Ex.3 - finding minimum element of list
@@ -53,4 +52,9 @@ prog(N) -> [N]++prog(N-1).
 
 
 
+% Ex.10 - returning array of ones of specified length/array of specified signs of specified length
+lista_jedynek(0) -> [];
+lista_jedynek(Length) -> [1]++lista_jedynek(Length-1).
 
+lista_znakow(0, _) -> [];
+lista_znakow(Length, Znak) -> [Znak]++lista_znakow(Length-1, Znak).
