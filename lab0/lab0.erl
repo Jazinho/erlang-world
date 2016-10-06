@@ -54,9 +54,9 @@ prog(N) -> [N]++prog(N-1).
 convTemp(Tuple, ScaleTo) -> 
 	C= toCelc(Tuple, ScaleTo),
 	case ScaleTo of
-		c -> C;
-		f -> (9/5) * C + 32;
-		k -> C + 273.15
+		c -> {ScaleTo, C };
+		f -> {ScaleTo, (9/5) * C + 32 };
+		k -> {ScaleTo, C + 273.15}
 	end.
 
 toCelc({ScaleFrom, Value}, _) ->
