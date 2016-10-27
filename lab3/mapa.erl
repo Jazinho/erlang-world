@@ -2,23 +2,22 @@
 
 -compile(export_all).
 
-wrapper(Parent, Function, Arg) ->
-	Parent ! Function(Arg).
+start(List, Function) -> procMap(List, Function, []).
 
-procMap([Head|Tail], Function) ->
-	%RefTag = make_ref(),
-	spawn(?MODULE, wrapper, [self(), Function, Head]),
-	procMap(Tail, Function);
+wrapper(Parent, Function, Arg, RefTag) ->
+	Parent ! {Function(Arg),RefTag}.
+
+procMap([Head|Tail], Function, ListOfTags) ->
+	RefTag = make_ref(),
+	spawn(?MODULE, wrapper, [self(), Function, Head, RefTag]),
+	procMap(Tail, Function, ListOfTags ++ [RefTag]);
 	
-procMap([], _) -> collectResults().
+procMap([], _, ListOfTags) -> collectResults(ListOfTags).
 
-collectResults() ->
+collectResults([HeadTag | Tail]) ->
 	receive 
-		Result -> 
-			[Result] ++ collectResults()
-	after 200 ->
-			[]
-	end.
+		{Result, HeadTag} -> 
+			[Result] ++ collectResults(Tail)
+	end;
 
-
-%% TODO:: zwracane wyniki mogą byc nie po kolei - uzyc mk_ref())
+collectResults([]) -> [].
