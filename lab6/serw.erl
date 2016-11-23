@@ -12,8 +12,7 @@ send(PID, Command, Arg) ->
 	end.
 
 stop(PID) ->
-	PID ! {exit},
-	exit(PID,normal).
+	PID ! {exit}.
 	
 % To start server process: PID = serw:init()
 % To send message to process: serw:send(PID, <command>, <command_arg>)
