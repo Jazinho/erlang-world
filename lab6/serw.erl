@@ -10,6 +10,12 @@ send(PID, Command, Arg) ->
 	receive
 		{Msg} -> io:format("~p \n",[Msg])
 	end.
+	
+send(PID, Command) ->
+	PID ! Command,
+	receive
+		{Msg} -> io:format("~p \n",[Msg])
+	end.
 
 stop(PID) ->
 	PID ! {exit}.
