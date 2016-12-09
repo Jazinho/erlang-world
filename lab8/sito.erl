@@ -3,7 +3,7 @@
 %%--------PARALLEL---SIEVE---OF---ERATOSTENES-------------------
 -module(sito).
 -compile(export_all).
- 
+	
 start(N) ->
 	List = lists:seq(3,N,2),
 	BasicPrimes = findPrimes([2]++lists:seq(3,round(math:sqrt(N)),2)),
@@ -11,16 +11,17 @@ start(N) ->
 	spawnProcesses(BasicPrimes, ListToCheck).
 
 spawnProcesses(BasicPrimes, ListToCheck) ->
-	PartLen = round(length(ListToCheck)/4),
-	Ref1 = make_ref(),
-	spawn(?MODULE, filterPart, [self(), Ref1, BasicPrimes, lists:sublist(ListToCheck, PartLen)]),
-	Ref2 = make_ref(),
-	spawn(?MODULE, filterPart, [self(), Ref2, BasicPrimes, lists:sublist(ListToCheck, PartLen+1, PartLen)]),
-	Ref3 = make_ref(),
-	spawn(?MODULE, filterPart, [self(), Ref3, BasicPrimes, lists:sublist(ListToCheck, 2*PartLen+1, PartLen)]),
-	Ref4 = make_ref(),
-	spawn(?MODULE, filterPart, [self(), Ref4, BasicPrimes, lists:sublist(ListToCheck, 3*PartLen+1, PartLen)]),
-	collectResults([Ref1,Ref2,Ref3,Ref4]).
+	NumberOfProcessors = erlang:system_info(logical_processors_available),
+	PartLen = round(length(ListToCheck)/NumberOfProcessors),
+	Refs = spawnProcess(NumberOfProcessors, NumberOfProcessors, [], BasicPrimes, ListToCheck, PartLen),	
+	BasicPrimes ++ collectResults(Refs).
+	
+spawnProcess(_, 0, ListOfRefs, _, _, _) -> ListOfRefs;
+	
+spawnProcess(NumberOfProcessors, Iter, ListOfRefs, BasicPrimes, ListToCheck, PartLen) ->
+	Ref = make_ref(),
+	spawn(?MODULE, filterPart, [self(), Ref, BasicPrimes, lists:sublist(ListToCheck, (NumberOfProcessors-Iter)*PartLen+1, PartLen)]),
+	spawnProcess(NumberOfProcessors, Iter-1, ListOfRefs++[Ref], BasicPrimes, ListToCheck, PartLen).
 	
 collectResults([Ref|Tail]) ->
 	receive
