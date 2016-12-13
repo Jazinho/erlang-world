@@ -11,17 +11,21 @@ start(N) ->
 	spawnProcesses(BasicPrimes, ListToCheck).
 
 spawnProcesses(BasicPrimes, ListToCheck) ->
-	NumberOfProcessors = erlang:system_info(logical_processors_available),
-	PartLen = round(length(ListToCheck)/NumberOfProcessors),
-	Refs = spawnProcess(NumberOfProcessors, NumberOfProcessors, [], BasicPrimes, ListToCheck, PartLen),	
+	T1 = erlang:timestamp(),
+	Length = length(ListToCheck),
+	NumberOfThreads = erlang:system_info(logical_processors_available) * (Length div 100000),
+	PartLen = round(Length/NumberOfThreads),
+	Refs = spawnProcess(NumberOfThreads, NumberOfThreads, [], BasicPrimes, ListToCheck, PartLen),
+	T2 = erlang:timestamp(),
+	io:format("Obliczenia trwaly ~p mikrosekund~n",[timer:now_diff(T2,T1)]),
 	BasicPrimes ++ collectResults(Refs).
 	
 spawnProcess(_, 0, ListOfRefs, _, _, _) -> ListOfRefs;
 	
-spawnProcess(NumberOfProcessors, Iter, ListOfRefs, BasicPrimes, ListToCheck, PartLen) ->
+spawnProcess(NumberOfThreads, Iter, ListOfRefs, BasicPrimes, ListToCheck, PartLen) ->
 	Ref = make_ref(),
-	spawn(?MODULE, filterPart, [self(), Ref, BasicPrimes, lists:sublist(ListToCheck, (NumberOfProcessors-Iter)*PartLen+1, PartLen)]),
-	spawnProcess(NumberOfProcessors, Iter-1, ListOfRefs++[Ref], BasicPrimes, ListToCheck, PartLen).
+	spawn(?MODULE, filterPart, [self(), Ref, BasicPrimes, lists:sublist(ListToCheck, (NumberOfThreads-Iter)*PartLen+1, PartLen)]),
+	spawnProcess(NumberOfThreads, Iter-1, ListOfRefs++[Ref], BasicPrimes, ListToCheck, PartLen).
 	
 collectResults([Ref|Tail]) ->
 	receive
