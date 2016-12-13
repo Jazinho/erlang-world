@@ -8,12 +8,15 @@ start(N) ->
 	List = lists:seq(3,N,2),
 	BasicPrimes = findPrimes([2]++lists:seq(3,round(math:sqrt(N)),2)),
 	ListToCheck = lists:sublist(List,length(BasicPrimes)+1,length(List)-length(BasicPrimes)),
-	spawnProcesses(BasicPrimes, ListToCheck).
+	try spawnProcesses(BasicPrimes, ListToCheck)
+	catch
+		_:_ -> start(N)
+	end.
 
 spawnProcesses(BasicPrimes, ListToCheck) ->
 	T1 = erlang:timestamp(),
 	Length = length(ListToCheck),
-	NumberOfThreads = erlang:system_info(logical_processors_available) * (Length div 100000),
+	NumberOfThreads = erlang:system_info(logical_processors_available) * ((Length div 100000)+1),
 	PartLen = round(Length/NumberOfThreads),
 	Refs = spawnProcess(NumberOfThreads, NumberOfThreads, [], BasicPrimes, ListToCheck, PartLen),
 	T2 = erlang:timestamp(),
@@ -24,7 +27,7 @@ spawnProcess(_, 0, ListOfRefs, _, _, _) -> ListOfRefs;
 	
 spawnProcess(NumberOfThreads, Iter, ListOfRefs, BasicPrimes, ListToCheck, PartLen) ->
 	Ref = make_ref(),
-	spawn(?MODULE, filterPart, [self(), Ref, BasicPrimes, lists:sublist(ListToCheck, (NumberOfThreads-Iter)*PartLen+1, PartLen)]),
+	spawn_link(?MODULE, filterPart, [self(), Ref, BasicPrimes, lists:sublist(ListToCheck, (NumberOfThreads-Iter)*PartLen+1, PartLen)]),
 	spawnProcess(NumberOfThreads, Iter-1, ListOfRefs++[Ref], BasicPrimes, ListToCheck, PartLen).
 	
 collectResults([Ref|Tail]) ->
