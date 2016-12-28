@@ -5,12 +5,17 @@
 -compile(export_all).
 	
 start(N) ->
-	List = lists:seq(3,N,2),
-	BasicPrimes = findPrimes([2]++lists:seq(3,round(math:sqrt(N)),2)),
-	ListToCheck = lists:sublist(List,length(BasicPrimes)+1,length(List)-length(BasicPrimes)),
-	try spawnProcesses(BasicPrimes, ListToCheck)
-	catch
-		_:_ -> start(N)
+	if 
+		is_integer(N) and (N > 2) -> 	
+			List = lists:seq(3,N,2),
+			BasicPrimes = findPrimes([2]++lists:seq(3,round(math:sqrt(N)),2)),
+			ListToCheck = lists:sublist(List,length(BasicPrimes)+1,length(List)-length(BasicPrimes)),
+			try spawnProcesses(BasicPrimes, ListToCheck)
+			catch
+				_:_ -> start(N)
+			end;
+		true ->
+			io:format("Nalezy podac liczbe calkowita wieksza od 2~n")
 	end.
 
 spawnProcesses(BasicPrimes, ListToCheck) ->
