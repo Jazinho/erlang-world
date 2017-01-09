@@ -21,7 +21,7 @@ start(N) ->
 spawnProcesses(BasicPrimes, ListToCheck) ->
 	T1 = erlang:timestamp(),
 	Length = length(ListToCheck),
-	NumberOfThreads = erlang:system_info(logical_processors_available) * ((Length div 100000)+1),
+	NumberOfThreads = erlang:system_info(logical_processors_available) * ((Length div 1000000)+1),
 	PartLen = round(Length/NumberOfThreads),
 	Refs = spawnProcess(NumberOfThreads, NumberOfThreads, [], BasicPrimes, ListToCheck, PartLen),
 	T2 = erlang:timestamp(),
